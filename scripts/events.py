@@ -596,7 +596,7 @@ class Events():
         lost_cat = None
         for cat in Cat.outside_cats.values():
             if cat.outside and cat.status not in [
-                'kittypet', 'loner', 'rogue', 'former Clancat'
+                    'kittypet', 'loner', 'rogue', 'former clancat'
             ] and not cat.exiled and not cat.dead:
                 lost_cat = cat
                 break
@@ -1400,6 +1400,8 @@ class Events():
         if chance <= 0:
             chance = 1
         if not int(random.random() * chance):
+
+            #print('ACC')
             self.misc_events.handle_misc_events(
                 cat,
                 other_cat,
