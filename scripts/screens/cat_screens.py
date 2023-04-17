@@ -340,7 +340,6 @@ class ProfileScreen(Screens):
                         self.the_cat.prevent_fading = False
                     else:
                         self.the_cat.prevent_fading = True
-                    update_sprite(self.the_cat)  # This will remove the transparency on the cat.
                     self.clear_profile()
                     self.build_profile()
 
@@ -389,7 +388,6 @@ class ProfileScreen(Screens):
                 self.the_cat.die()
                 self.the_cat.died_by.append(
                     f'It was the will of something even mightier than StarClan that this cat died.')
-                update_sprite(self.the_cat)
                 self.clear_profile()
                 self.build_profile()
                 self.update_disabled_buttons_and_text()
@@ -410,9 +408,6 @@ class ProfileScreen(Screens):
                         self.the_cat.df = True
                         game.clan.add_to_darkforest(self.the_cat)
                         self.the_cat.thought = "Is distraught after being sent to the Place of No Stars"
-
-                    # Update sprite in this situation.
-                    update_sprite(self.the_cat)
 
                 self.clear_profile()
                 self.build_profile()
@@ -506,7 +501,6 @@ class ProfileScreen(Screens):
         self.build_profile()
 
         self.hide_menu_buttons()  # Menu buttons don't appear on the profile screen
-        cat_profiles()
         self.update_platform()
         if game.last_screen_forProfile == 'med den screen':
             self.toggle_conditions_tab()
@@ -627,8 +621,9 @@ class ProfileScreen(Screens):
 
         # Create cat image object
         self.profile_elements["cat_image"] = pygame_gui.elements.UIImage(scale(pygame.Rect((200, 400), (300, 300))),
+                                                                         
                                                                          pygame.transform.scale(
-                                                                             self.the_cat.large_sprite,
+                                                                             self.the_cat.sprite,
                                                                              (300, 300)), manager=MANAGER)
         self.profile_elements["cat_image"].disable()
 
@@ -890,17 +885,42 @@ class ProfileScreen(Screens):
                 output += ' moons'
 
         # MATE
-        if the_cat.mate:
+        if len(the_cat.mate) > 0:
             # NEWLINE ----------
             output += "\n"
-            if the_cat.mate in Cat.all_cats:
-                mate_ob = Cat.fetch_cat(the_cat.mate)
-                if mate_ob.dead != self.the_cat.dead or mate_ob.outside != self.the_cat.outside:
-                    output += 'former mate: ' + str(Cat.all_cats[the_cat.mate].name)
-                else:
-                    output += 'mate: ' + str(Cat.all_cats[the_cat.mate].name)
-            else:
-                output += 'Error: mate: ' + str(the_cat.mate) + " not found"
+            if len(the_cat.mate) > 0:
+                # collect all names
+                mates = []
+                prev_mates = []
+                for mate_id in the_cat.mate:
+                    if mate_id in Cat.all_cats:
+                        mate_ob = Cat.fetch_cat(mate_id)
+                        if mate_ob.dead != self.the_cat.dead or mate_ob.outside != self.the_cat.outside:
+                            prev_mates.append(str(mate_ob.name))
+                        else:
+                            mates.append(str(mate_ob.name))
+                    else:
+                        output += 'Error: mate: ' + str(mate_id) + " not found"
+                for prev_mate_id in the_cat.previous_mates:
+                    if prev_mate_id in Cat.all_cats:
+                        mate_ob = Cat.fetch_cat(prev_mate_id)
+                        prev_mates.append(str(mate_ob.name))
+                    else:
+                        output += 'Error: mate: ' + str(prev_mate_id) + " not found"
+                # merge the names together for the output
+                if len(mates) > 0:
+                    if len(mates) > 1:
+                        output += 'mates: ' + str(', '.join(mates))
+                    else:
+                        output += 'mate: ' + mates[0]
+                if len(prev_mates) > 0:
+                    if len(mates) > 0:
+                        output += '\n'
+                    if len(prev_mates) > 1:
+                        output += 'former mates: ' + str(', '.join(prev_mates))
+                    else:
+                        output += 'former mate: ' + prev_mates[0]
+
 
         if not the_cat.dead:
             # NEWLINE ----------
@@ -2470,7 +2490,7 @@ class RoleScreen(Screens):
         self.selected_cat_elements["cat_image"] = pygame_gui.elements.UIImage(
             scale(pygame.Rect((490, 80), (300, 300))),
             pygame.transform.scale(
-                self.the_cat.big_sprite, (300, 300)),
+                self.the_cat.sprite, (300, 300)),
             manager=MANAGER
         )
 
