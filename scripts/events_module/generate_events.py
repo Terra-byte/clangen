@@ -173,7 +173,6 @@ class GenerateEvents:
                         collateral_damage=event["collateral_damage"]
                     )
                     break
-                #print(event)
                 return event
 
     def possible_short_events(self, cat_type=None, age=None, event_type=None):
@@ -253,7 +252,7 @@ class GenerateEvents:
 
         return event_list
 
-    def filter_possible_short_events(self, possible_events, cat, other_cat, war, enemy_clan, other_clan, alive_kits, murder=False):
+    def filter_possible_short_events(self, possible_events, cat, other_cat, war, enemy_clan, other_clan, alive_kits, murder=False, murder_reveal=False):
         final_events = []
 
         minor = []
@@ -269,7 +268,11 @@ class GenerateEvents:
             war_event = False
 
         for event in possible_events:
-
+            
+            # Normally, there is a chance to bypass skill and trait requirments. 
+            # the "skill_trait_required" tags turns this off. Lets grab this tag once, for simplicity. 
+            prevent_bypass = "skill_trait_required" in event.tags
+            
             if war_event and ("war" not in event.tags and "hostile" not in event.tags):
                 continue
             if not war and "war" in event.tags:
@@ -288,6 +291,11 @@ class GenerateEvents:
             if murder and "murder" not in event.tags:
                 continue
             if not murder and "murder" in event.tags:
+                continue
+
+            if murder_reveal and "murder_reveal" not in event.tags:
+                continue
+            if not murder_reveal and "murder_reveal" in event.tags:
                 continue
 
             # make complete leader death less likely until the leader is over 150 moons
@@ -418,13 +426,13 @@ class GenerateEvents:
                     
                 # There is a small chance to bypass the skill or trait requirments.  
                 if event.other_cat_trait and event.other_cat_skill:
-                    if not (has_trait or has_skill) and int(random.random() * trait_skill_bypass):
+                    if not (has_trait or has_skill) and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                         continue
                 elif event.other_cat_trait:
-                    if not has_trait and int(random.random() * trait_skill_bypass):
+                    if not has_trait and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                         continue
                 elif event.other_cat_skill:
-                    if not has_skill and int(random.random() * trait_skill_bypass):
+                    if not has_skill and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                         continue
                 
                 
@@ -483,13 +491,13 @@ class GenerateEvents:
             
             # There is a small chance to bypass the skill or trait requirments.  
             if event.cat_trait and event.cat_skill:
-                if not (has_trait or has_skill) and int(random.random() * trait_skill_bypass):
+                if not (has_trait or has_skill) and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                     continue
             elif event.cat_trait:
-                if not has_trait and int(random.random() * trait_skill_bypass):
+                if not has_trait and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                     continue
             elif event.cat_skill:
-                if not has_skill and int(random.random() * trait_skill_bypass):
+                if not has_skill and (prevent_bypass or int(random.random() * trait_skill_bypass)):
                     continue
             
             
@@ -544,7 +552,6 @@ class GenerateEvents:
                     final_events = major
                 else:
                     final_events = severe
-                #print(cat.status, severity_chosen[0])
 
         return final_events
 
