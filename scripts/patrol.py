@@ -1095,6 +1095,9 @@ class Patrol():
                 elif rare and fail_text.get("leader_death") and self.patrol_leader == game.clan.leader:
                     outcome = "leader_death"
                 # dead
+                elif rare and len(fail_text) >= 3:
+                    if fail_text[2]:
+                        outcome = 2
                 elif rare and fail_text.get("death"):
                     outcome = "death"
 
@@ -1105,8 +1108,8 @@ class Patrol():
                 if fail_text.get("death"):
                     outcome = "death"
                 # attempt injure outcome
-                elif fail_text.get("injury"):
-                    outcome = "injury"
+                elif fail_text[3]:
+                    outcome = 3
 
             if not antagonize or antagonize and "antag_death" in self.patrol_event.tags:
                 if "death" in outcome:
@@ -1208,24 +1211,17 @@ class Patrol():
         kittypet = False
         other_clan = None
 
-        if "kittypet" in attribute_list:
-            cat_type = "kittypet"
-        elif "loner" in attribute_list:
-            cat_type = "loner"
-        elif "clancat" in attribute_list:
-            cat_type = "former_clancat"
-        elif "rogue" in attribute_list:
-            cat_type = "rogue"
-        else:
+        if ("kittypet" or "loner" or "clancat" or "rogue") not in attribute_list:
             cat_type = choice(['kittypet', 'loner', 'former_clancat'])
-
-        if cat_type == 'kittypet':
+        if cat_type == 'kittypet' or "kittypet" in attribute_list:
             kittypet = True
             new_name = choice([True, False])
-            chosen_backstory = BACKSTORIES["backstory_categories"]["kittypet_backstories"]
+            chosen_backstory = Cat.backstory_categories["kittypet_backstories"]
             if "medcat" in attribute_list:
                 status = 'medicine cat'
                 chosen_backstory = ["wandering_healer1", "wandering_healer2"]
+            if "abandonedkittypet" in self.patrol_event.patrol_id:
+                chosen_backstory = ['kittypet4', 'kittypet4']
             if not success:
                 outsider = create_outside_cat(Cat, "kittypet", backstory=choice(chosen_backstory))
                 self.results_text.append(f"The Clan has met {outsider}.")
@@ -1233,7 +1229,7 @@ class Patrol():
         elif cat_type == 'loner':
             loner = True
             new_name = choice([True, False])
-            chosen_backstory = BACKSTORIES["backstory_categories"]["loner_backstories"]
+            chosen_backstory = Cat.backstory_categories["loner_backstories"]
             if "medcat" in attribute_list:
                 status = 'medicine cat'
                 chosen_backstory = ["wandering_healer1", "wandering_healer2"]
@@ -1269,7 +1265,7 @@ class Patrol():
             # failsafe in case self.other_clan is None for some reason
             if "medcat" in attribute_list:
                 status = 'medicine cat'
-                chosen_backstory = ["medicine_cat", "disgraced1"]
+                chosen_backstory = ["medicine_cat", "disgraced"]
             if not other_clan:
                 loner = True
                 new_name = choice([True, False])

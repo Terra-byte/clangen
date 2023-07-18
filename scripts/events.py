@@ -623,7 +623,7 @@ class Events:
                 Cat.outside_cats.update({cat.ID: cat})
                 
             if cat.outside and cat.status not in [
-                'kittypet', 'loner', 'rogue', 'former Clancat'
+                    'kittypet', 'loner', 'rogue', 'former clancat'
             ] and not cat.exiled and not cat.dead:
                 eligable_cats.append(cat)
         
@@ -1496,6 +1496,8 @@ class Events:
                         break
             
             
+
+            #print('ACC')
             self.misc_events.handle_misc_events(
                 cat,
                 other_cat,
